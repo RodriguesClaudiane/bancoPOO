@@ -1,52 +1,21 @@
 package org.projeto.banco.conta;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Random;
-import java.util.ArrayList;
 
-public class ContaCorrente implements IContaBancaria {
+import org.projeto.banco.cliente.RegistroTransacoes;
+import org.projeto.banco.cliente.TiposTransacao;
 
-	private Integer numeroConta;
-	private BigDecimal saldo;
-	private LocalDateTime dataAbertura;
-	private boolean status;
-	private List<RegistroTransacao> transacoes;
 
-	public ContaCorrente() {
-		this.numeroConta = new Random().nextInt(999999999);
-		this.saldo = BigDecimal.ZERO;
-		saldo.setScale(4, RoundingMode.HALF_UP);
-		this.dataAbertura = LocalDateTime.now();
-		this.status = true;
-		transacoes = new ArrayList<>();
-	}
+public class ContaCorrente extends ContaBancaria implements Serializable {
+	
 
-	public void sacar(BigDecimal quantia) {
+	private static final long serialVersionUID = 1L;
+	public void depositar(double quantia) {
 		if (status) {
-			if (quantia.compareTo(BigDecimal.ZERO) > 0) {
-				if (this.saldo.compareTo(quantia) > 0) {
-					this.saldo = this.saldo.subtract(quantia);
-					transacoes.add(new RegistroTransacao(quantia, TipoTransacao.DEBITO, LocalDateTime.now()));
-					System.out.println("Saque realizado com sucesso!");
-				} else {
-					System.err.println("Saldo insuficiente.");
-				}
-			} else {
-				System.err.println("Valor invalido para saque.");
-			}
-		} else {
-			System.err.println("Operação não permitida. Conta desativada.");
-		}
-	}
-
-	public void depositar(BigDecimal quantia) {
-		if (status) {
-			if (quantia.compareTo(BigDecimal.ZERO) > 0) {
-				this.saldo = this.saldo.add(quantia);
-				transacoes.add(new RegistroTransacao(quantia, TipoTransacao.CREDITO, LocalDateTime.now()));
+			if (quantia > 0) {
+				this.saldo += quantia;
+				transacoes.add(new RegistroTransacoes(quantia, TiposTransacao.Credito, LocalDateTime.now()));
 				System.out.println("Deposito realizado com sucesso.");
 			} else {
 				System.err.println("Valor invalido para deposito.");
@@ -58,19 +27,53 @@ public class ContaCorrente implements IContaBancaria {
 		}
 	}
 
-	public void transferir(ContaBancaria cb, BigDecimal quantia) {
-		if (status && cb.isStatus()) {
-			if (quantia.compareTo(BigDecimal.ZERO) < 0) {
-				System.err.println("Valor invalido para transferencia.");
-			} else if (quantia.compareTo(saldo) <= 0) {
-				setSaldo(saldo.subtract(quantia));
-				cb.setSaldo(cb.getSaldo().add(quantia));
-				cb.transacoes.add(new RegistroTransacao(quantia, TipoTransacao.TRANSACAO_CREDITO, LocalDateTime.now()));
-				transacoes.add(new RegistroTransacao(quantia, TipoTransacao.TRANSACAO_DEBITO, LocalDateTime.now()));
-			} else
-				System.err.println("Saldo insuficiente para realizar a transferencia.");
-		} else {
-			System.err.println("Operacao nao pode ser realizada entre contas desativadas.");
+	public void transferir(ContaCorrente cb, double quantia) {
+		if (!this.status) {
+			System.err.println("Sua conta está desativada");
+		}
+		else if (cb.isStatus() != true) {
+			System.err.println("Conta de destino desativada");
+		}
+		else if (quantia <= 0) {
+				System.err.println("Valor inválido para transferência.");
+		}
+		else if (quantia > this.saldo) {
+			System.err.println("Saldo insuficiente");
+			} else {
+				this.saldo -= quantia;
+				cb.setSaldo(cb.getSaldo() + quantia);
+				cb.transacoes.add(new RegistroTransacoes(quantia, TiposTransacao.Transacao_Credito, LocalDateTime.now()));
+				transacoes.add(new RegistroTransacoes(quantia, TiposTransacao.Transacao_Debito, LocalDateTime.now()));
+				System.out.println("Transferencia feita com sucesso!");
+			}
+	}
+	public void sacar(double quantia) {
+		if (!this.status) {
+			System.err.println("Operação não permitida.Conta desativada");
+		}
+			else if (quantia <= 0) {
+				System.err.println("Valor inválido para saque");
+			}
+			else if (quantia > this.saldo) {
+				System.err.println("Saldo insuficiente");
+			}else{
+					this.saldo -= quantia;
+					transacoes.add(new RegistroTransacoes(quantia, TiposTransacao.Debito, LocalDateTime.now()));
+					System.out.println("Saque realizado com sucesso!");
+			}
+	             }
+	public void desativarConta() {
+		if(this.status != true) {
+			System.err.println("Conta já inativa");
+		}else{
+			this.status = false;
 		}
 	}
-};
+	public void reativarConta() {
+		if(this.status == true){
+			System.err.print("Conta já ativa");
+		}else {
+			this.status = true;
+		}
+	}
+	};

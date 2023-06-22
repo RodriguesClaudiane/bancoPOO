@@ -4,22 +4,20 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.projeto.banco.conta.ContaBancaria;
+import org.projeto.banco.conta.ContaCorrente;
 
-public class Cliente implements Serializable {
+public class Cliente implements Serializable{ 
 	private static final long serialVersionUID = 1L;
 	private String cpf;
 	private String nome;
-	
-	private List<ContaBancaria> contas;
+	private List<ContaCorrente> contas;
 	
 	public Cliente() {
 		
 	}
-	
-	public Cliente(String nome,String cpf) {
-		this.nome = nome;
+	public Cliente(String cpf,String nome) {
 		this.cpf = cpf;
+		this.nome = nome;
 		contas = new ArrayList<>();
 	   }
 	@Override
@@ -61,14 +59,14 @@ public class Cliente implements Serializable {
 		this.nome = nome;
 	}
 
-	public List<ContaBancaria> getContas() {
+	public List<ContaCorrente> getContas() {
 		return contas;
 	}
 
-	public void setContas(List<ContaBancaria> contas) {
+	public void setContas(List<ContaCorrente> contas) {
 		this.contas = contas;
 	}
-	public void abrirConta(ContaBancaria cb) {
+	public void abrirConta(ContaCorrente cb) {
 	if(contas.contains(cb)) {
 		System.out.println("Conta já cadastrada");
 	}else {
@@ -76,17 +74,20 @@ public class Cliente implements Serializable {
 		System.out.println("Conta criada com sucesso");
 	}
 	}
-	public void fecharConta(ContaBancaria cb) {
-		if(contas.contains(cb)) {
+	public void fecharConta(ContaCorrente cb) {
+		if(cb.getSaldo() != 0.0) {
+			System.err.println("Não fi possivel fechar conta.Conta com saldo");
+		}
+		else if(contas.contains(cb)) {
 			this.contas.remove(cb);
 			System.out.println("Conta fechada com sucesso");
 		}else {
 			System.out.println("Conta não existe ou não está associada ao cliente");
 		}
 	}
-	public ContaBancaria localizarContaPeloNumero(int numero) {
+	public ContaCorrente localizarContaPeloNumero(int numero) {
 		for(int i= 0;i < contas.size();i++) {
-			ContaBancaria cb = contas.get(i);
+			ContaCorrente cb = contas.get(i);
 			if(cb.getNumeroConta() == numero) {
 				System.out.println("Conta número" + numero + "foi encontrada com sucesso");
 				return cb;
@@ -99,7 +100,7 @@ public class Cliente implements Serializable {
 	public double balancoContasCliente() {
 		double saldoTotalCliente = 0.0;
 		for(int i = 0; i < contas.size(); i++) {
-			ContaBancaria cb = contas.get(i);
+			ContaCorrente cb = contas.get(i);
 			saldoTotalCliente += cb.getSaldo();
 		}
 		System.out.println("O seu saldo total é:" + saldoTotalCliente);
